@@ -2330,6 +2330,14 @@ SINGLE = TRUE""",
             """COPY INTO 's3://example/contacts.csv' FROM "db"."tbl" STORAGE_INTEGRATION = "PROD_S3_SIDETRADE_INTEGRATION" FILE_FORMAT = (FORMAT_NAME="my_csv_format" TYPE=CSV COMPRESSION=NONE NULL_IF=('') FIELD_OPTIONALLY_ENCLOSED_BY='"') MATCH_BY_COLUMN_NAME = CASE_SENSITIVE OVERWRITE = TRUE SINGLE = TRUE INCLUDE_METADATA = ("col1" = "METADATA$START_SCAN_TIME")""",
         )
 
+        self.validate_all(
+            """COPY INTO test FROM (SELECT $1, $2, $3 FROM @stage1 (pattern => 'tmp.*', file_format => 'ff1'))""",
+            write={
+                "": "COPY INTO test FROM (SELECT $1, $2, $3 FROM @stage1 (FILE_FORMAT => 'ff1', PATTERN => 'tmp.*'))",
+                "snowflake": "COPY INTO test FROM (SELECT $1, $2, $3 FROM @stage1 (FILE_FORMAT => 'ff1', PATTERN => 'tmp.*'))",
+            },
+        )
+
     def test_querying_semi_structured_data(self):
         self.validate_identity("SELECT $1")
         self.validate_identity("SELECT $1.elem")
